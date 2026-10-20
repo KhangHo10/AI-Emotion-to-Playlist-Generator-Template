@@ -1,10 +1,4 @@
-"""Handles Spotify API queries and playlist creation.
-
-Uses the post-February-2026 Web API endpoints (POST /me/playlists and
-/playlists/{id}/items). spotipy's user_playlist_create / playlist_add_items
-still call the removed /users/{id}/playlists and /playlists/{id}/tracks routes,
-so those two calls go through the raw client instead.
-"""
+"""Handles Spotify API queries and playlist creation."""
 import random
 from functools import lru_cache
 
@@ -22,9 +16,6 @@ MOODS_QUERY_MAP = {
     "Neutral 😐": "chill lofi instrumental focus",
 }
 
-# Each search reads one page from a random point within the top MAX_SEARCH_DEPTH results and
-# samples tracks from it, so "Shuffle again" gives a different set. Depth is kept small:
-# results are ranked by relevance and popularity, and deep results fit the mood less well.
 SEARCH_PAGE_SIZE = 10  # Development Mode maximum for search
 MAX_SEARCH_DEPTH = 60
 
@@ -35,25 +26,12 @@ class SpotifyNotLoggedIn(Exception):
 
 @lru_cache(maxsize=1)
 def get_auth_manager() -> SpotifyOAuth:
-    """OAuth manager with token caching in .cache.
-
-    Reads SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET and SPOTIPY_REDIRECT_URI from the environment.
-    """
-    return SpotifyOAuth(
-        scope="playlist-modify-public playlist-modify-private user-read-private",
-        cache_path=".cache",
-    )
+    # TODO: Initialize SpotifyOAuth
+    return SpotifyOAuth()
 
 
 def login() -> str:
-    """Run the interactive browser login (if no cached token) and return the user's display name.
-
-    Call this once from the terminal before serving requests. spotipy's login blocks while it
-    waits for the browser redirect, which would freeze any web request that triggered it.
-    """
-    get_auth_manager().get_access_token(as_dict=False)
-    user = spotipy.Spotify(auth_manager=get_auth_manager()).current_user()
-    return user.get("display_name") or user["id"]
+    # TODO: Login page 
 
 
 def is_logged_in() -> bool:
@@ -63,12 +41,7 @@ def is_logged_in() -> bool:
 
 
 def get_spotify_client() -> spotipy.Spotify:
-    if not is_logged_in():
-        raise SpotifyNotLoggedIn(
-            "Not logged in to Spotify. Stop the app, then restart `python app.py` "
-            "and complete the login in your browser."
-        )
-    return spotipy.Spotify(auth_manager=get_auth_manager())
+    # TODO: Return a Spotify client using the cached auth manager
 
 
 def _search_tracks(sp: spotipy.Spotify, query: str, limit: int) -> list[dict]:
@@ -113,14 +86,8 @@ def save_playlist(mood: str, track_uris: list[str]) -> dict:
     sp = get_spotify_client()
     source = f"Search: '{MOODS_QUERY_MAP.get(mood, 'pop hits')}'"
 
-    playlist = sp._post(
-        "me/playlists",
-        payload={
-            "name": f"AI Vibe Check: {mood}",
-            "public": False,
-            "description": f"Generated via real-time webcam emotion detection. {source}",
-        },
-    )
+    # TODO: Create a new private playlist with the mood name and source description, then add the tracks to it.
+
     sp._post(f"playlists/{playlist['id']}/items", payload={"uris": track_uris})
 
     return {"id": playlist["id"], "url": playlist["external_urls"]["spotify"]}

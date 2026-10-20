@@ -42,7 +42,7 @@ def spotify_error(err: Exception):
 
 @app.get("/")
 def index():
-    return render_template("index.html", moods=MOODS)
+    # TODO: Render the main page with the mood buttons and webcam capture.
 
 
 @app.post("/api/detect-emotion")
